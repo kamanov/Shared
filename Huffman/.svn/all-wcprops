@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/cpp13/!svn/ver/198/karim.amanov/Huffman
+END
+tree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/tree.cpp
+END
+huffmancoder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/huffmancoder.cpp
+END
+tree.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/tree.h
+END
+treewalker.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/treewalker.cpp
+END
+huffmancoder.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/huffmancoder.h
+END
+bufwriter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/bufwriter.cpp
+END
+treewalker.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/treewalker.h
+END
+huffmandecoder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/huffmandecoder.cpp
+END
+streamreader.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/streamreader.cpp
+END
+bufwriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/bufwriter.h
+END
+huffmandecoder.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/huffmandecoder.h
+END
+streamreader.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/streamreader.h
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/cpp13/!svn/ver/443/karim.amanov/Huffman/main.cpp
+END
+streamwriter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/cpp13/!svn/ver/343/karim.amanov/Huffman/streamwriter.cpp
+END
+node.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/node.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/cpp13/!svn/ver/443/karim.amanov/Huffman/Makefile
+END
+streamwriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/cpp13/!svn/ver/341/karim.amanov/Huffman/streamwriter.h
+END
