@@ -1,0 +1,26 @@
+CFLAGS= -c -std=c++0x -Wall -O2 -p -pg
+
+all: pp
+
+pp: parser.o main.o lexer.o interpreter.o evaluator.o    
+	gcc-4.8  parser.o main.o lexer.o interpreter.o evaluator.o  -p -pg -o pp
+
+parser.o: parser.cpp
+	gcc-4.8 $(CFLAGS) parser.cpp
+
+main.o: main.cpp
+	gcc-4.8 $(CFLAGS)  main.cpp
+
+lexer.o: lexer.cpp
+	gcc-4.8 $(CFLAGS) lexer.cpp
+
+interpreter.o: interpreter.cpp
+	gcc-4.8 $(CFLAGS) interpreter.cpp
+
+evaluator.o: evaluator.cpp
+	gcc-4.8 $(CFLAGS) evaluator.cpp
+
+clean:
+	rm -rf *.o pp
+
+
