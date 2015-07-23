@@ -1,0 +1,22 @@
+{
+    "contents" : "",
+    "created" : 1420725545714.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BBF4077A",
+    "lastKnownWriteTime" : 1413058224,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "caption" : "seeds",
+        "contentUrl" : "content?title=seeds&file=703cb2627130452886fbebcd6e4afc06.htm",
+        "displayedObservations" : "210",
+        "displayedVariables" : 8,
+        "totalObservations" : "210",
+        "variables" : "8"
+    },
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}

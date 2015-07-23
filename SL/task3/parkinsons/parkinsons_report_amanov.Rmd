@@ -1,0 +1,200 @@
+---
+title: "parkinsons"
+author: "Karim Amanov"
+date: "9 января 2015 г."
+output: html_document
+---
+
+
+```{r}
+library(MASS)
+library(lattice)
+library(latticeExtra)
+library(ISLR)
+library(e1071)
+library(nnet)
+options(warn=-1)
+
+```
+
+Загружаем данные
+```{r}
+parkinsons <- read.csv("parkinsons.csv", comment.char = "#")
+
+```
+Для начала выкинем столбец names и будем анализировать данные независимо
+```{r}
+parkinsons$name <- NULL
+```
+Построим различные графики
+
+```{r}
+library(corrplot)
+corrplot(cor(parkinsons))
+```
+
+Можем наблюдать сильную зависимость многих параметров. 
+
+```{r}
+marginal.plot(parkinsons)
+```
+
+Сразу уберем MDVP.Jitter.Abs, потому что есть значение этого параметра в процентах. Еще можно будет попробовать прологарифмировать некторые параметры, чтобы распределния стали более симметричными
+
+```{r}
+parkinsons$MDVP.Jitter.Abs <- NULL
+marginal.plot(log(subset(parkinsons, select = c(-status, -spread1, -spread2, -MDVP.Fo.Hz., -MDVP.Fhi.Hz.))))
+
+```
+
+```{r}
+parkinsons$status <- factor(parkinsons$status, labels = c("No","Yes"))
+contrasts(parkinsons$status)
+marginal.plot(parkinsons, data = parkinsons, groups = status,,auto.key = list(lines = TRUE, title ="Status",cex.title = 1))
+```
+
+Подготовим данные и перейдем к построению модели.
+```{r}
+train.idx <- sample(nrow(parkinsons), size = nrow(parkinsons) * 0.66)
+parkinsons.train <- parkinsons[train.idx, ]
+parkinsons.test <- parkinsons[-train.idx, ]
+```
+
+***Logistic Regression***
+```{r}
+build_and_test_logistic <- function(formula) {
+  simple.predict.glm <- function(x, newdata, ...) {
+  response <- predict(x, newdata, type = "response", ...)
+  factor(levels(x$model[, 1])[1 + as.integer(response > 0.5)]) 
+  }
+  model <- glm(formula , data = parkinsons.train, family = binomial(link = "logit"))
+  print(model)
+
+  print(tune(glm, formula, family = binomial(link = "logit"), data = parkinsons, predict.func = simple.predict.glm, tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- simple.predict.glm(model, newdata=parkinsons.test)
+  print(table(predicted = my.predicted, actual = parkinsons.test$status))
+  print(mean(my.predicted != parkinsons.test$status))
+  return (model)
+}
+glm.fit <-build_and_test_logistic(status ~ .)
+```
+
+Попросим stepAIC выбрать нужные параметры
+
+```{r}
+model.aic <- stepAIC(glm.fit)
+m <- build_and_test_logistic(as.formula(model.aic))
+```
+
+Теперь попробуем другие методы с этими параметрами
+
+*LDA*
+```{r}
+build_and_test_lda <- function(formula) {
+  model <- lda(formula , data = parkinsons.train)
+  print(model)
+
+  print(tune(lda, formula, data = parkinsons, predict.func = function(...) predict(...)$class, tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, parkinsons.test)
+  print(table(predicted = my.predicted$class, actual = parkinsons.test$status))
+  print(mean(my.predicted$class != parkinsons.test$status))
+}
+build_and_test_lda(as.formula(model.aic))
+```
+Немного улучшили
+
+*naive bayes*
+```{r}
+build_and_test_bayes <- function(formula) {
+  model <- naiveBayes(formula , data = parkinsons.train)
+  print(model)
+
+  print(tune(naiveBayes, formula, data = parkinsons, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, parkinsons.test)
+  print(table(predicted = my.predicted, actual = parkinsons.test$status))
+  print(mean(my.predicted != parkinsons.test$status))
+}
+
+build_and_test_bayes(as.formula(model.aic))
+```
+Не очень.
+
+*multinomial regression*
+```{r}
+build_and_test_multinom <- function(formula) {
+  model <- multinom(formula , data = parkinsons.train, trace = FALSE, maxit = 4000)
+  print(model)
+
+  print(tune(multinom, formula, data = parkinsons, trace = FALSE, maxit = 4000, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, parkinsons.test)
+  print(table(predicted = my.predicted, actual = parkinsons.test$status))
+  print(mean(my.predicted != parkinsons.test$status))
+}
+build_and_test_multinom(as.formula(model.aic))
+```
+
+Модель построенная методом LDA показала себя лучше всех, на ней пока и остановимся.
+
+Давайте теперь сгруппируем данные по пациентам (возьмем среднее по соответствующему признаку) и опять попробуем построить модель
+```{r}
+parkinsons <- read.csv("parkinsons.csv", comment.char = "#")
+parkinsons$name <- substr(parkinsons$name,1, 13)
+parkinsons <- aggregate(parkinsons, by=list(parkinsons$name), FUN=mean)
+parkinsons$Group.1 <- NULL
+parkinsons$name <- NULL
+parkinsons$status <- factor(parkinsons$status, labels = c("No","Yes"))
+dim(parkinsons)
+
+train.idx <- sample(nrow(parkinsons), size = nrow(parkinsons) * 0.66)
+parkinsons.train <- parkinsons[train.idx, ]
+parkinsons.test <- parkinsons[-train.idx, ]
+model.group.glm <-build_and_test_logistic(status ~ .)
+```
+
+Посмотрим что теперь нам скажет AIC
+```{r}
+model.group.aic <- stepAIC(model.group.glm)
+m <- build_and_test_logistic(as.formula(model.group.aic))
+
+```
+
+Попробуем другими методами
+```{r}
+build_and_test_multinom(as.formula(model.group.aic))
+build_and_test_bayes(as.formula(model.group.aic))
+build_and_test_lda(as.formula(model.group.aic))
+```
+модель Lda опять оказалась лучшей. Также она немного превзошла модель, выбранную для несгруппированных данных. Поэтому остановим свой выбор на этой модели.
+
+Давайте теперь построим ROC кривые
+
+```{r}
+library(ROCR)
+ROC <- function(predicted, actual, ...) {
+  pred <- prediction(predicted, as.numeric(actual))
+  roc <- performance(pred, measure = "tpr",
+  x.measure = "fpr", ...)
+  roc
+}
+
+AUC <- function(predicted, actual, ...) {
+  pred <- prediction(predicted, as.numeric(actual))
+  perf <- performance(pred, measure = "auc", ...)
+  perf@y.values[[1]]
+}
+plotRoc <- function(m) {
+  roc <- ROC(predict(m, parkinsons), parkinsons$status)
+  plot(roc)
+}
+plotRoc(model.group.aic)
+AUC(predict(model.group.aic, parkinsons), parkinsons$status)
+plotRoc(model.aic)
+AUC(predict(model.aic, parkinsons), parkinsons$status)
+
+```
+
+ROC кривые выглядят хорошо

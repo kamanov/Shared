@@ -1,0 +1,56 @@
+---
+title: "glaucoma_report"
+author: "Karim Amanov"
+date: "10 января 2015 г."
+output: html_document
+---
+
+```{r}
+library(lattice)
+library(latticeExtra)
+library(e1071)
+
+```
+
+Загружаем данные
+```{r}
+glaucoma <- read.table("GlaucomaMVF.txt", header = TRUE)
+table(glaucoma$Class)
+```
+Используя SVM, построим классификатор для данных. Для начала напишем вспомогательную функцию
+```{r}
+show <- function(m) {
+  xyplot(m$performances[, "error"] ~ log(m$performances[,"cost"]), type = "b")
+}
+
+build_and_test <- function(kernel, ...) {
+  m <- tune.svm(Class ~ ., data = glaucoma, 
+                kernel = kernel, ...)
+  show(m)
+  print(m)
+}
+
+```
+
+Попробуем линейное ядро
+
+```{r}
+build_and_test("linear", cost =2^(-10:10))
+```
+
+Неплохой результат. Видно что данные хорошо разделяются линейным ядром, но все равно давайте попробуем другие ядра.
+
+Полиномиальное ядро 
+```{r}
+build_and_test("polynomial", cost =2^(-10:10))
+```
+Стало хуже.
+Давайте попробуем радиальное ядро, здесь помимо cost, нужно еще gamma варьировать
+```{r}
+show <- function(m) {
+  plot(m, transform.x = log, transform.y = log, color.palette = rainbow)
+}
+build_and_test("radial", cost =2^(-10:10), gamma = 2^(-10:5))
+```
+
+Здесь тоже не лучше, чем линейной ядро, поэтому давайте остановим свой выбор на первом классификаторе.

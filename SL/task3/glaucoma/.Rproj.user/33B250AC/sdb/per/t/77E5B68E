@@ -1,0 +1,17 @@
+{
+    "contents" : "---\ntitle: \"glaucoma_report\"\nauthor: \"Karim Amanov\"\ndate: \"10 января 2015 г.\"\noutput: html_document\n---\n\n```{r}\nlibrary(lattice)\nlibrary(latticeExtra)\nlibrary(e1071)\n\n```\n\nЗагружаем данные\n```{r}\nglaucoma <- read.table(\"GlaucomaMVF.txt\", header = TRUE)\ntable(glaucoma$Class)\n```\nИспользуя SVM, построим классификатор для данных. Для начала напишем вспомогательную функцию\n```{r}\nshow <- function(m) {\n  xyplot(m$performances[, \"error\"] ~ log(m$performances[,\"cost\"]), type = \"b\")\n}\n\nbuild_and_test <- function(kernel, ...) {\n  m <- tune.svm(Class ~ ., data = glaucoma, \n                kernel = kernel, ...)\n  show(m)\n  print(m)\n}\n\n```\n\nПопробуем линейное ядро\n\n```{r}\nbuild_and_test(\"linear\", cost =2^(-10:10))\n```\n\nНеплохой результат. Видно что данные хорошо разделяются линейным ядром, но все равно давайте попробуем другие ядра.\n\nПолиномиальное ядро \n```{r}\nbuild_and_test(\"polynomial\", cost =2^(-10:10))\n```\nСтало хуже.\nДавайте попробуем радиальное ядро, здесь помимо cost, нужно еще gamma варьировать\n```{r}\nshow <- function(m) {\n  plot(m, transform.x = log, transform.y = log, color.palette = rainbow)\n}\nbuild_and_test(\"radial\", cost =2^(-10:10), gamma = 2^(-10:5))\n```\n\nЗдесь тоже не лучше, чем линейной ядро, поэтому давайте остановим свой выбор на первом классификаторе.",
+    "created" : 1420899488805.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4101833105",
+    "id" : "77E5B68E",
+    "lastKnownWriteTime" : 1420939846,
+    "path" : "~/Spbau/SL/task3/glaucoma/glaucoma_report.Rmd",
+    "project_path" : "glaucoma_report.Rmd",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

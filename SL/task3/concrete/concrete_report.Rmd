@@ -1,0 +1,75 @@
+---
+title: "Concrete report"
+author: "Karim Amanov"
+date: "7 января 2015 г."
+output: html_document
+---
+
+Загружаем данные
+```{r}
+concrete <- read.csv("Concrete_Data.csv", comment.char = "#", row.names = NULL)
+```
+Для начала посмотрим на корреляцию всех компонентов
+```{r}
+library(corrplot)
+corrplot(cor(concrete))
+```
+
+
+Как видно, в основном прочность зависит от cement, water, superplasticizer и age. Также заметим, что имеется приличная зависимость между water и superplasticizer.
+
+Построим одно-мерные графики зависимостей прочности от всего остального
+
+```{r}
+library(lattice)
+library(latticeExtra)
+
+draw <-function(param) {
+  formula <- reformulate(termlabels = param, response = 'ConcreteCompressiveStrength')
+  xyplot(formula, panel=function(...) {  
+  panel.xyplot(...)
+  panel.loess(...)
+  }, data = concrete, xlab = param, ylab = "Strength")
+}
+for (i in colnames(concrete)[-9]) { print(draw(i)) }
+
+```
+
+
+Итак, что мы видим из графиков: зависимость прочности от cement и superplasticizer близка к линейной,  Fine Aggregate и Coarse Aggregate после какого-то значения перестают оказывать влияние, BlastFurnaceSlag и FlyAsh судя по всему тоже слабо влияют на итоговую прочность, небольшое увеличение в начале кажется следствием неравномерноти данных (в этих местах точек намного меньше), Age явно является дискретным. Запомним все это и приступим к построению модели.
+
+```{r}
+library(MASS)
+library(e1071)
+build_model_and_validate<- function(f){ 
+  model = lm(as.formula(f), concrete)
+  print(summary(model))
+  print(tune(lm, as.formula(model), data = concrete, tunecontrol = tune.control(sampling = "cross")))
+  return (model)
+}
+m1 = build_model_and_validate(ConcreteCompressiveStrength ~ .)
+```
+Теперь будем улучшать. Попробуем убрать слабо влияющие компоненты
+
+```{r}
+m2 = build_model_and_validate(ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag+FlyAsh + Water + Superplasticizer + Age)
+```
+
+Изменилось совсем немного.
+А теперь вспоним что зависимость Age у нас дискретна, поэтому нарпашивается сделать ее фактором 
+```{r}
+
+concrete$Age <- factor(concrete$Age)
+contrasts(concrete$Age) <- contr.helmert
+m3 = build_model_and_validate(ConcreteCompressiveStrength ~ Cement + BlastFurnaceSlag + FlyAsh + Water + Superplasticizer + Age)
+```
+ 
+Другое дело.Стало заметно лучше. Теперь посмотрим, чем нам может помочь AIC.
+
+```{r}
+m3.aic <- stepAIC(m3)
+tune(lm, as.formula(m3.aic), data = concrete, tunecontrol = tune.control(sampling = "cross"))
+```
+
+Стало немного лучше. Эту модель и оставим.
+

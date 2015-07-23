@@ -1,0 +1,22 @@
+{
+    "contents" : "",
+    "created" : 1420631900387.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BB6EB765",
+    "lastKnownWriteTime" : 0,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "caption" : "сoncrete",
+        "contentUrl" : "content?title=%D1%81oncrete&file=860f5622cd474f29851d02c86bbe561f.htm",
+        "displayedObservations" : "1000",
+        "displayedVariables" : 9,
+        "totalObservations" : "1030",
+        "variables" : "9"
+    },
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}

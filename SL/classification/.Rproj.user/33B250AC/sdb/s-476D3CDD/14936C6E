@@ -1,0 +1,17 @@
+{
+    "contents" : "\n```{r}\nlibrary(MASS)\nlibrary(lattice)\nlibrary(corrplot)\nlibrary(lattice)\nlibrary(latticeExtra)\nlibrary(impute)\nlibrary(ISLR)\nlibrary(e1071)\nlibrary(nnet)\nlibrary(class)\n\nmovies <- read.csv(\"DataRegression.csv\")\nmovies$Film <- NULL\nmovies$X.1 <- NULL\nmovies$X.2 <- NULL\nmovies$X <- NULL\nmovies<-na.omit(movies)\ncorrplot(cor(movies))\nmovies$Rating <- factor(round(movies$Rating))\nnames(movies)\n\n\nmarginal.plot(movies)\n\ntrain.idx <- sample(nrow(movies), size = nrow(movies) * 0.66)\nmovies.train <- movies[train.idx, ]\nmovies.test <- movies[-train.idx, ]\n\nbuild_and_test_lda <- function(formula) {\n  model <- lda(formula , data = movies.train)\n  print(model)\n\n  print(tune(lda, formula, data = movies, predict.func = function(...) predict(...)$class, tunecontrol = tune.control(sampling = \"cross\",cross = 10)))\n  \n  my.predicted <- predict(model, movies.test)\n  print(table(predicted = my.predicted$class, actual = movies.test$Rating))\n  print(mean(my.predicted$class != movies.test$Rating))\n}\n\nbuild_and_test_lda(Rating ~ Producer + Actor.Group4 + Actor.Group2)\n\nbuild_and_test_bayes <- function(formula) {\n  model <- naiveBayes(formula , data = movies.train)\n  print(model)\n\n  print(tune(naiveBayes, formula, data = movies, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = \"cross\",cross = 10)))\n  \n  my.predicted <- predict(model, movies.test)\n  print(table(predicted = my.predicted, actual = movies.test$Rating))\n  print(mean(my.predicted != movies.test$Rating))\n}\n\nbuild_and_test_bayes(Rating ~ .)\n\nbuild_and_test_multinom <- function(formula) {\n  model <- multinom(formula , data = movies.train, trace = FALSE, maxit = 3000)\n  print(model)\n\n  print(tune(multinom, formula, data = movies, trace = FALSE, maxit = 3000, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = \"cross\",cross = 10)))\n  \n  my.predicted <- predict(model, movies.test)\n  print(table(predicted = my.predicted, actual = movies.test$Rating))\n  print(mean(my.predicted != movies.test$Rating))\n  return (model)\n}\nmr1 <- build_and_test_multinom(Rating ~ .)\nmr1.aic.formula <- as.formula(stepAIC(mr1))\nm <- build_and_test_multinom(mr1.aic.formula)\n\n\n\nshow <- function(m) {\n  xyplot(m$performances[, \"error\"] ~ log(m$performances[,\"cost\"]), type = \"b\")\n}\n\nbuild_and_test <- function(kernel, ...) {\n  m <- tune.svm(Rating ~ ., data = movies, \n                kernel = kernel, ...)\n  show(m)\n  print(m)\n}\n\ntrain.knn <- movies.train[, -1]\ntest.knn <- movies.test[, -1]\ntrain.cl <- movies.train$Rating\ntest.cl <- movies.test$Rating\nmodel.knn <- knn(train.knn, test.knn, train.cl, k=10, prob=TRUE)\nsum(model.knn!=test.cl)/length(test.cl)\n\n```\n#build_and_test(\"linear\", cost =2^(-10:10))\n",
+    "created" : 1421627355758.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2973168176",
+    "id" : "14936C6E",
+    "lastKnownWriteTime" : 1421691325,
+    "path" : "~/Spbau/SL/PredictMe/classification/report.Rmd",
+    "project_path" : "report.Rmd",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

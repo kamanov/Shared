@@ -1,0 +1,121 @@
+---
+title: "seeds"
+author: "Karim Amanov"
+date: "8 января 2015 г."
+output: html_document
+---
+
+Загружаем данные
+```{r}
+seeds <- read.table("seeds_dataset.txt")
+names(seeds) <- c("Area", "Perimeter", "Compactness", "KernelLength", "KernelWidth", "Asymmetry", "GrooveLength", "Variety")
+```
+
+Посмотрим на корреляцию всех компонентов
+```{r}
+library(corrplot)
+corrplot(cor(seeds))
+```
+
+Видим наличие сильной корреляции между различными признаками. Также из описания данных мы знаем что Compactness выражается через Perimeter и Area, поэтому можно будет попробовать убрать этот признак.
+
+Еще больше графиков!
+
+```{r}
+library(lattice)
+library(latticeExtra)
+marginal.plot(seeds)
+seeds$Variety <- factor(seeds$Variety, labels = c("Kama","Rosa", "Canadian"))
+marginal.plot(seeds[,-8], data = seeds, groups = Variety,auto.key = list(lines = TRUE, title ="Variety",cex.title = 1, columns = 3))
+
+```
+
+На этих графиках мы можем видеть какие признаки лучше отделяют сорта.Воспользуемся этим когда будем строить модели.
+
+Подготовим данные и приступим к построению моделей
+
+```{r}
+library(MASS)
+library(e1071)
+library(nnet)
+train.idx <- sample(nrow(seeds), size = nrow(seeds) * 0.66)
+seeds.train <- seeds[train.idx, ]
+seeds.test <- seeds[-train.idx, ]
+```
+
+**метод LDA**
+
+```{r}
+build_and_test_lda <- function(formula) {
+  model <- lda(formula , data = seeds.train)
+  print(model)
+
+  print(tune(lda, formula, data = seeds, predict.func = function(...) predict(...)$class, tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, seeds.test)
+  print(table(predicted = my.predicted$class, actual = seeds.test$Variety))
+  print(mean(my.predicted$class != seeds.test$Variety))
+}
+
+build_and_test_lda(Variety ~ .)
+```
+
+Пробуем убрать Compactness
+```{r}
+build_and_test_lda(Variety ~ . - Compactness)
+```
+
+Посмотрим на коэффициенты. Есть идея оставить только KernelLength и GrooveLength
+```{r}
+build_and_test_lda(Variety ~ KernelLength + GrooveLength)
+```
+
+Получилось довольно неплохо, с учетом того что и модель стала проще. Далее я пробовал перебирать все возможные признаки, но особых улчушений не было. Поэтому остановимся на этой модели.
+
+
+**метод naive bayes**
+
+```{r}
+build_and_test_bayes <- function(formula) {
+  model <- naiveBayes(formula , data = seeds.train)
+  print(model)
+
+  print(tune(naiveBayes, formula, data = seeds, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, seeds.test)
+  print(table(predicted = my.predicted, actual = seeds.test$Variety))
+  print(mean(my.predicted != seeds.test$Variety))
+}
+
+build_and_test_bayes(Variety ~ .)
+build_and_test_bayes(Variety ~ . - Compactness)
+build_and_test_bayes(Variety ~ KernelLength + GrooveLength)
+```
+naive bayes никаких улучшений не дал
+
+**метод multinomial regression**
+
+```{r}
+build_and_test_multinom <- function(formula) {
+  model <- multinom(formula , data = seeds.train, trace = FALSE, maxit = 4000)
+  print(model)
+
+  print(tune(multinom, formula, data = seeds, trace = FALSE, maxit = 4000, predict.func = function(...) predict(...), tunecontrol = tune.control(sampling = "cross",cross = 10)))
+  
+  my.predicted <- predict(model, seeds.test)
+  print(table(predicted = my.predicted, actual = seeds.test$Variety))
+  print(mean(my.predicted != seeds.test$Variety))
+  return (model)
+}
+mr1 <- build_and_test_multinom(Variety ~ .)
+mr2 <- build_and_test_multinom(Variety ~ . - Compactness)
+mr3 <- build_and_test_multinom(Variety ~ KernelLength + GrooveLength)
+```
+
+А теперь посмотрим, что нам сможет предложить AIC
+```{r}
+mr1.aic.formula <- as.formula(stepAIC(mr1))
+m <- build_and_test_multinom(mr1.aic.formula)
+```
+Ничего особо не улучшили.Остановимся на последней lda модели.
+

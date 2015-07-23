@@ -1,0 +1,17 @@
+{
+    "contents" : "---\ntitle: \"seeds\"\nauthor: \"Karim Amanov\"\ndate: \"8 января 2015 г.\"\noutput: html_document\n---\n\nЗагружаем данные\n```{r}\nseeds <- read.table(\"seeds_dataset.txt\")\nnames(seeds) <- c(\"Area\", \"Perimeter\", \"Compactness\", \"KernelLength\", \"KernelWidth\", \"Asymmetry\", \"GrooveLength\", \"Variety\")\n\n```\n\nПосмотрим на корреляцию всех компонентов\n```{r}\nlibrary(corrplot)\ncorrplot(cor(seeds))\n```\n",
+    "created" : 1420721851195.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "3306829957",
+    "id" : "CB3779A6",
+    "lastKnownWriteTime" : 6917529031936048896,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

@@ -1,0 +1,9 @@
+{
+    "path" : "~/Spbau/SL/PredictMe/classification",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
